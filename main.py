@@ -1,5 +1,5 @@
 import pygame
-
+import numpy as np;
 from models.NeuralNetwork import NeuralNetwork
 from visuals.NeuralNetworkVisualizer import NeuralNetVisualizer
 # pygame setup
@@ -13,13 +13,23 @@ nn = NeuralNetwork(2,3);
 nnVisualizer = NeuralNetVisualizer(nn)
 for l in range(len(nn.layers)):
     print(nn.layers[l].weights.shape)
+    
+nn.feedforward(np.array([[0],[0]]));
+print(nn.outputValues);
 
 while running:
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:             
+                    nn = NeuralNetwork(2,3)
+                    print(nn.feedforward(np.array([[0],[0]])));
+                    nnVisualizer = NeuralNetVisualizer(nn)
+                if event.key == pygame.K_ESCAPE:
+                     running = False
 
     # fill the screen with a color to wipe away anything from last frame
     screen.fill("red")

@@ -11,9 +11,10 @@ class NeuronVisualizer:
         self.y = y
         self.value = value
         self.color = 'white';
-
+    
     def draw(self, surface):
-        pygame.draw.circle(surface,(random.randint(0,255),random.randint(0,255),random.randint(0,255)),(self.x,self.y),circleDiameter/2);
+        #print(self.value)
+        pygame.draw.circle(surface,(int(self.value*255),int(self.value*255),int(self.value*255)),(self.x,self.y),circleDiameter/2);
     
     def updateValue(self, value):
         self.value = value
@@ -32,29 +33,30 @@ class NeuralNetVisualizer:
     
     def update(self,surface):
 
+        # Compute neurons position and draw the lines first
         for inputNeuronIndex in range(self.nn.NoOfinput):
             self.network.append([]);
-            self.network[0].append(NeuronVisualizer(OFFSET_X,OFFSET_Y + inputNeuronIndex*50,10));
-            self.network[0][inputNeuronIndex].draw(surface);
+            self.network[0].append(NeuronVisualizer(OFFSET_X,OFFSET_Y + inputNeuronIndex*50,self.nn.outputValues[0][inputNeuronIndex][0]));
         
         for layerIndex in range(len(self.nn.layers)):
             self.network.append([]);
-            print('Layer Index: ' + str(layerIndex));
+            #print('Layer Index: ' + str(layerIndex));
             for neuronIndex in range(self.nn.layers[layerIndex].weights.shape[0]):
                 neuronPosX = OFFSET_X + (layerIndex + 1) * 100;
                 neuronPosY = OFFSET_Y + neuronIndex * 50;
-                self.network[layerIndex + 1].append(NeuronVisualizer(neuronPosX,neuronPosY,10));
-                self.network[layerIndex + 1][neuronIndex].draw(surface);
+                self.network[layerIndex + 1].append(NeuronVisualizer(neuronPosX,neuronPosY,self.nn.outputValues[layerIndex+1][neuronIndex][0]));
                 
                 weightsOfNeuron = self.nn.layers[layerIndex].weights[neuronIndex];
-                print(weightsOfNeuron)
+                #print(weightsOfNeuron)
 
                 for lineIndex in range(len(weightsOfNeuron)):
                     start_pos = (neuronPosX,neuronPosY);
                     end_pos = (OFFSET_X + (layerIndex) * 100,OFFSET_Y + lineIndex * 50);
                     pygame.draw.line(surface, 'black', start_pos, end_pos, int(weightsOfNeuron[lineIndex]*10))
-                # for lineIndex in range(self.nn.layers[layerIndex].weights[neuronIndex]):
 
+        for neuronLine in self.network:
+            for neuron in neuronLine:
+                neuron.draw(surface)
 
     # def draw(self, surface):
     #     for layerIndex in range(len(self.network)):

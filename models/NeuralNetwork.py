@@ -14,16 +14,31 @@ class NeuralNetwork:
         self.NoOfoutput = NoOfoutput;
         self.NoOfHiddenLayers = 2;
         self.layers = [ Layer(NoOfinput,5), Layer(5,5), Layer(5,NoOfoutput)];
+        self.outputValues = []
 
     def feedforward(self, input):
         output = input;
+        self.outputValues = [];
+        self.outputValues.append(output);
         for layer in self.layers:
-            output = np.matmul(layer.weights,output) + layer.bias;
+
+            print('W:')
+            print(layer.weights)
+
+            print('I:')
+            print(output)
+
+            output = np.matmul(layer.weights,output);
+            print('Out:')
+            print(output)
+            print('-----')
             # vecReLU = np.vectorize(ReLU)
             # output = vecReLU(output)
             vecSigmoid = np.vectorize(sigmoid)
             output = vecSigmoid(output)
-            print(output)
+            self.outputValues.append(output);
+
+            #print(output)
         return output;
             
     
