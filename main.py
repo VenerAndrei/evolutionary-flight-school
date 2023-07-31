@@ -1,6 +1,8 @@
 import pygame
-import numpy as np;
+import numpy as np
+from models.Baloon import Body
 from models.NeuralNetwork import NeuralNetwork
+from physics.Vector2D import Vector2D
 from visuals.NeuralNetworkVisualizer import NeuralNetVisualizer
 
 clock = pygame.time.Clock()
@@ -39,6 +41,14 @@ neuralNetworkScreen = pygame.Surface((WIDTH//2, HEIGHT//2))
 # Create font object
 font = pygame.font.Font(None, 36)  # None specifies the default font, 36 is the font size
 
+#Baloon Object
+baloon = Body(playgroundScreen,Vector2D(100,100));
+
+v1 = Vector2D(2,2);
+v2 = v1.getCopy()
+v2 = v2 * -1;
+print(v1 - v2)
+
 # Main game loop
 while running:
     for event in pygame.event.get():
@@ -51,7 +61,14 @@ while running:
                     nnVisualizer = NeuralNetVisualizer(nn)
                 if event.key == pygame.K_ESCAPE:
                      running = False
-
+                if event.key == pygame.K_d:
+                     baloon.applyForce(Vector2D(1,0))
+                if event.key == pygame.K_a:
+                     baloon.applyForce(Vector2D(-1,0))
+                if event.key == pygame.K_w:
+                     baloon.applyForce(Vector2D(0,-1))
+                if event.key == pygame.K_s:
+                     baloon.applyForce(Vector2D(0,1))
     # Clear the main screen with a white color
     screen.fill((255, 255, 255))
 
@@ -59,17 +76,31 @@ while running:
     playgroundScreen.fill((255, 0, 0))  # Red
     infoScreen.fill((0, 0, 0))  # Green
     neuralNetworkScreen.fill((0, 0, 255))  # Blue
+    
+    # Air friction Direct proportional with speed
+    baloon.applyForce(baloon.velocity*-0.01)
 
+    # Gravity
+    baloon.applyForce(Vector2D(0,1))
+    if(baloon.position.y > HEIGHT - 20):
+         baloon.velocity.y = -baloon.velocity.y
+         
     # Render text on each mini-screen
     playgroundText = font.render("Playground", True, (255, 255, 255))  # White text
-    infoText = font.render("Info", True, (255, 255, 255))  # White text
+
+    velocity = font.render("VelX: {:.2f}  VelY: {:.2f}".format(baloon.velocity.x,baloon.velocity.y), True, (255, 255, 255))  # White text
+    acceleration = font.render("AccX: {:.2f}  AccY: {:.2f}".format(baloon.acceleration.x,baloon.acceleration.y), True, (255, 255, 255))  # White text
+    
+    baloon.update()
+
     neuralNetworkText = font.render("NN Visualizer", True, (255, 255, 255))  # White text
 
     # Blit (draw) text surfaces on the mini-screens
     playgroundScreen.blit(playgroundText, (10, 10))
-    infoScreen.blit(infoText, (10, 10))
-    neuralNetworkScreen.blit(neuralNetworkText, (10, 10))
+    infoScreen.blit(velocity, (10, 10))
+    infoScreen.blit(acceleration, (10, 30))
 
+    neuralNetworkScreen.blit(neuralNetworkText, (10, 10))
     # Draw the neural network
     nnVisualizer.update(neuralNetworkScreen)
 
