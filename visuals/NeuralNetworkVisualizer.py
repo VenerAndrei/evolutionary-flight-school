@@ -1,4 +1,6 @@
 import random
+
+import numpy
 from models.Layer import Layer
 from models.NeuralNetwork import NeuralNetwork
 import pygame;
@@ -14,6 +16,11 @@ class NeuronVisualizer:
     
     def draw(self, surface):
         #print(self.value)
+
+        
+        
+        self.value = self.value = numpy.interp(self.value,(-1000,1000),(0,1));
+
         pygame.draw.circle(surface,(int(self.value*255),int(self.value*255),int(self.value*255)),(self.x,self.y),circleDiameter/2);
     
     def updateValue(self, value):
@@ -31,8 +38,8 @@ class NeuralNetVisualizer:
         self.nn = neuralNet;
         self.network = []
     
-    def update(self,surface):
-
+    def updateAndDraw(self,surface):
+        self.network = []
         # Compute neurons position and draw the lines first
         for inputNeuronIndex in range(self.nn.NoOfinput):
             self.network.append([]);

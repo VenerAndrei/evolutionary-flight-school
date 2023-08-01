@@ -21,7 +21,7 @@ class Object:
     def updatePhysics(self):
         netForce = self.getNetForce()
         # Get the net acceleration: F = m*a
-        netAcceleration = netForce * (1/self.mass)
+        netAcceleration = (netForce * (1/self.mass))
 
         # Update the velocity 
         self.velocity = self.velocity + netAcceleration

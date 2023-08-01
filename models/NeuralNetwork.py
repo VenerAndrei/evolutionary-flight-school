@@ -22,25 +22,12 @@ class NeuralNetwork:
         self.outputValues.append(output);
         for layer in self.layers:
 
-            print('W:')
-            print(layer.weights)
-
-            print('I:')
-            print(output)
-
             output = np.matmul(layer.weights,output);
-            print('Out:')
-            print(output)
-            print('-----')
+     
             # vecReLU = np.vectorize(ReLU)
             # output = vecReLU(output)
             vecSigmoid = np.vectorize(sigmoid)
             output = vecSigmoid(output)
             self.outputValues.append(output);
 
-            #print(output)
         return output;
-            
-    
-
-    
