@@ -5,8 +5,8 @@ from models.Layer import Layer
 from models.NeuralNetwork import NeuralNetwork
 import pygame;
 circleDiameter = 25;
-OFFSET_X = 100;
-OFFSET_Y = 100;
+OFFSET_X = 110;
+OFFSET_Y = 50;
 class NeuronVisualizer:
     def __init__(self, x, y, value):
         self.x = x
@@ -19,7 +19,7 @@ class NeuronVisualizer:
 
         
         
-        self.value = self.value = numpy.interp(self.value,(-1000,1000),(0,1));
+        self.value = numpy.interp(self.value,(0,1),(0,1));
 
         pygame.draw.circle(surface,(int(self.value*255),int(self.value*255),int(self.value*255)),(self.x,self.y),circleDiameter/2);
     
@@ -49,7 +49,7 @@ class NeuralNetVisualizer:
             self.network.append([]);
             #print('Layer Index: ' + str(layerIndex));
             for neuronIndex in range(self.nn.layers[layerIndex].weights.shape[0]):
-                neuronPosX = OFFSET_X + (layerIndex + 1) * 100;
+                neuronPosX = OFFSET_X + (layerIndex + 1) * 200;
                 neuronPosY = OFFSET_Y + neuronIndex * 50;
                 self.network[layerIndex + 1].append(NeuronVisualizer(neuronPosX,neuronPosY,self.nn.outputValues[layerIndex+1][neuronIndex][0]));
                 
@@ -58,8 +58,11 @@ class NeuralNetVisualizer:
 
                 for lineIndex in range(len(weightsOfNeuron)):
                     start_pos = (neuronPosX,neuronPosY);
-                    end_pos = (OFFSET_X + (layerIndex) * 100,OFFSET_Y + lineIndex * 50);
-                    pygame.draw.line(surface, 'black', start_pos, end_pos, int(weightsOfNeuron[lineIndex]*10))
+                    end_pos = (OFFSET_X + (layerIndex) * 200,OFFSET_Y + lineIndex * 50);
+                    if(weightsOfNeuron[lineIndex] < 0):
+                        pygame.draw.line(surface, 'red', start_pos, end_pos, int(-weightsOfNeuron[lineIndex]*10))
+                    else:
+                        pygame.draw.line(surface, 'black', start_pos, end_pos, int(weightsOfNeuron[lineIndex]*10))
 
         for neuronLine in self.network:
             for neuron in neuronLine:

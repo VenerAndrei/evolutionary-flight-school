@@ -7,7 +7,7 @@ class Object:
         self.velocity = Vector2D(0,0)
         self.acceleration = Vector2D(0,0)
         self.appliedForces = []
-    
+        self.maxVelocity = 3;
     def applyForce(self, force: Vector2D):
         self.appliedForces.append(force)
 
@@ -25,7 +25,15 @@ class Object:
 
         # Update the velocity 
         self.velocity = self.velocity + netAcceleration
+        if self.velocity.x > self.maxVelocity:
+            self.velocity.x = self.maxVelocity
+        if self.velocity.x < -self.maxVelocity:
+            self.velocity.x = -self.maxVelocity
 
+        if self.velocity.y > self.maxVelocity:
+            self.velocity.y = self.maxVelocity
+        if self.velocity.y < -self.maxVelocity:
+            self.velocity.y = -self.maxVelocity
         # Update the position
         self.position = self.position + self.velocity
 

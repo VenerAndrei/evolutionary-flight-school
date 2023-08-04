@@ -1,6 +1,6 @@
 from models.Layer import Layer
 import numpy as np
-
+from typing import List
 def ReLU(input):
     if input < 0: return 0
     return input
@@ -13,11 +13,13 @@ class NeuralNetwork:
         self.NoOfinput = NoOfinput;
         self.NoOfoutput = NoOfoutput;
         self.NoOfHiddenLayers = 2;
-        self.layers = [ Layer(NoOfinput,5), Layer(5,5), Layer(5,NoOfoutput)];
+        self.layers:List[Layer] = [ Layer(NoOfinput,6), Layer(6,NoOfoutput)];
         self.outputValues = []
+        self.lastInput = 0;
 
     def feedforward(self, input):
-        output = input;
+        self.lastInput = input;
+        output = np.array(input);
         self.outputValues = [];
         self.outputValues.append(output);
         for layer in self.layers:
