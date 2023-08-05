@@ -7,10 +7,9 @@ from physics.Vector2D import Vector2D
 WIDTH, HEIGHT = 1600, 900
 
 def getNewBebeEliteBrains(population:List[Body]):
-    eliteTop5 = population[:20]
     newBrains:List[NeuralNetwork] = []
-    for parent1Idx,parent1 in enumerate(eliteTop5):
-        for parent2Idx,parent2 in enumerate(eliteTop5):
+    for parent1Idx,parent1 in enumerate(population):
+        for parent2Idx,parent2 in enumerate(population):
             if parent1Idx != parent2Idx:
                 brain = createChildrenBrain(parent1,parent2)
                 newBrains.append(brain);
@@ -22,7 +21,7 @@ def createChildrenBrain(parent1: Body, parent2: Body):
     return bebeBrain;
 
 def crossover(parent1: Body, parent2: Body):
-    childBrain = NeuralNetwork(4,4);
+    childBrain = NeuralNetwork(2,4);
     for layerIndex,layer in enumerate(parent1.neuralNetwork.layers):
         for rowIdx in range(len(layer.weights)):
             for colIdx in range(len(layer.weights[0])):
@@ -54,16 +53,16 @@ def nextGeneration(population:List[Body],surface):
     population.sort(key=lambda b: b.score)
     newBrains = getNewBebeEliteBrains(population)
 
+    newGeneration:List[Body] = []
     for brain in newBrains:
-        population.pop()
-        population.append(Body(surface, brain, Vector2D(WIDTH//4,HEIGHT-20)))
+        newGeneration.append(Body(surface, brain, Vector2D(WIDTH//4,HEIGHT-20)))
 
-    for agent in population:
+    for agent in newGeneration:
         agent.position.x = WIDTH//4 - 50;
         agent.position.y = HEIGHT-50;
         agent.velocity.x = 0;
         agent.velocity.y = 0;
-        agent.neuralNetwork.feedforward([[0],[0],[0],[0]]);
+        agent.neuralNetwork.feedforward([[0],[0]]);
         agent.score = 0;
-    return population
+    return newGeneration
     

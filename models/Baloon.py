@@ -15,14 +15,43 @@ class Body(Object):
         self.neuralNetwork = neuralNetwork;
         self.score = 0;
         self.color = 'blue'
+        self.alive = True
+
     def update(self):
-        self.updatePhysics()
+        # Air friction Direct proportional with speed
+        self.applyForce(self.velocity*-0.01)
+
+        if(self.position.y > HEIGHT - 20):
+            self.position.y = HEIGHT - 20
+            self.velocity.y = -self.velocity.y
+            self.alive = False
+
+        if(self.position.y < 0):
+            self.position.y = 0
+            self.velocity.y = -self.velocity.y
+            self.alive = False
+
+        if(self.position.x < 0):
+            self.position.x = 0;
+            self.velocity.x = -self.velocity.x
+            self.alive = False
+
+
+        if(self.position.x > WIDTH/2 - 20):
+            self.position.x = WIDTH/2 - 20;
+            self.velocity.x = -self.velocity.x
+            self.alive = False
+        
+        if(self.alive):
+            self.updatePhysics()
 
     def draw(self):
-        pygame.draw.rect(self.screen, self.color, Rect(self.position.x,self.position.y, 20,20));
+        if(self.alive):
+            pygame.draw.rect(self.screen, self.color, Rect(self.position.x,self.position.y, 20,20));
 
-    def setNeuralNetwork(self, neuralNetwork: NeuralNetwork):
-        self.neuralNetwork = neuralNetwork;
+    def updateScore(self, target:Vector2D, time):
+        if(self.alive):
+            self.score += 1/(((target.x - self.position.x)**2 + (target.y - self.position.y)**2)/ HEIGHT) + time;
 
     def think(self, target):
         
@@ -36,12 +65,12 @@ class Body(Object):
         #          [self.velocity.x/3],
         #          [self.velocity.y/3]
         #          ]
+
         input = [
                  [(target.x - self.position.x)/(WIDTH/2)],
                  [(target.y - self.position.y)/HEIGHT],
-                 [self.velocity.x/3],
-                 [self.velocity.y/3]
                  ]
+        
         out = self.neuralNetwork.feedforward(input);
         max = numpy.argmax(out);
 
@@ -52,11 +81,12 @@ class Body(Object):
         if max == 2:
             self.applyForce(Vector2D(1,0));
         if max == 3:
-            self.applyForce(Vector2D(-1,0));
-        
+             self.applyForce(Vector2D(-1,0));
+
         # self.applyForce(Vector2D(0,-out[0][0]));
         # self.applyForce(Vector2D(0,out[1][0]));
         # self.applyForce(Vector2D(out[2][0],0));
         # self.applyForce(Vector2D(-out[3][0],0));
         # print(out)
-        self.score += ((target.x - self.position.x)**2 + (target.y - self.position.y)**2)/HEIGHT;
+
+    

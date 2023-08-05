@@ -12,34 +12,6 @@ from visuals.ScreenZone import Screen
 # Screen dimensions
 WIDTH, HEIGHT = 1600, 900
      
-def baloonLogic(baloon:Body):
-
-    # Air friction Direct proportional with speed
-    baloon.applyForce(baloon.velocity*-0.01)
-
-    # Gravity
-    #baloon.applyForce(Vector2D(0,0.5))
-
-    if(baloon.position.y > HEIGHT - 20):
-        baloon.position.y = HEIGHT - 20
-        baloon.velocity.y = -baloon.velocity.y
-        baloon.score += 100;
-
-    if(baloon.position.y < 0):
-        baloon.position.y = 0
-        baloon.velocity.y = -baloon.velocity.y
-        baloon.score += 100;
-
-    if(baloon.position.x < 0):
-        baloon.position.x = 0;
-        baloon.velocity.x = -baloon.velocity.x
-        baloon.score += 100;
-
-    if(baloon.position.x > WIDTH/2 - 20):
-        baloon.position.x = WIDTH/2 - 20;
-        baloon.velocity.x = -baloon.velocity.x
-        baloon.score += 100;
-
 def clearScreens():
     screen.fill((255, 255, 255))
     playgroundScreen.surface.fill((100, 100, 100))
@@ -70,38 +42,41 @@ target = Vector2D(WIDTH//4,HEIGHT//2);
 
 errSum = 0
 # Main game loop
+oldElitePopulaiton:List[Body] = []
+elitePopulation:List[Body] = []
+population:List[Body] = []
 
-baloonPopulation:List[Body] = []
-
-for _ in range(500):
-
-    nn = NeuralNetwork(4,4);
-    b = Body(playgroundScreen.surface, nn, Vector2D(WIDTH//4,HEIGHT-20));
-    b.neuralNetwork.feedforward(np.array([[0],[0],[0],[0]]));
-    baloonPopulation.append(b);
 
 lastTime = 0
 nowTime = 0
 difTime = 0
 generationNumber = 0
+tournamentNumber = 0
+maxTournaments = 5;
+
+population = []
+
+for _ in range(50):
+    nn = NeuralNetwork(2,4);
+    b = Body(playgroundScreen.surface, nn, Vector2D(WIDTH//4 - 50,HEIGHT-20));
+    b.neuralNetwork.feedforward(np.array([[0],[0]]));
+    population.append(b);
+
 while running:
 
     nowTime = pygame.time.get_ticks()
     difTime = nowTime - lastTime
     if(difTime >= 7000):
-        lastTime = nowTime;
-        nnVisualizer = NeuralNetVisualizer(baloonPopulation[0].neuralNetwork)
-        rprint("------------------------")
-        for idx,layer in enumerate(baloonPopulation[0].neuralNetwork.layers):
-            rprint('Layer: {}'.format(idx));
-            rprint(layer.weights)
-            rprint('Bias')
-            rprint(layer.bias)
-        rprint("------------------------")
+        population = []
+        for _ in range(50):
 
-        baloonPopulation = nextGeneration(baloonPopulation, playgroundScreen.surface)
-        generationNumber += 1
-    
+            nn = NeuralNetwork(2,4);
+            b = Body(playgroundScreen.surface, nn, Vector2D(WIDTH//4 - 50,HEIGHT-20));
+            b.neuralNetwork.feedforward(np.array([[0],[0]]));
+            population.append(b);
+            
+        lastTime = nowTime;
+        nnVisualizer = NeuralNetVisualizer(population[0].neuralNetwork)
 
     for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -120,19 +95,18 @@ while running:
 
     # Clear the main screen with a white color
     clearScreens()
-    baloonPopulation.sort(key=lambda x: x.score);
-    for baloon in baloonPopulation:
+    population.sort(key=lambda x: x.score);
+    for baloon in population:
         baloon.color = 'blue'
-    baloonPopulation[0].color = 'black'
-    nnVisualizer = NeuralNetVisualizer(baloonPopulation[0].neuralNetwork)
+    population[0].color = 'black'
+    nnVisualizer = NeuralNetVisualizer(population[0].neuralNetwork)
 
-    for baloon in baloonPopulation:
+    for baloon in population:
 
-        baloonLogic(baloon)
         baloon.think(target)
-        
         baloon.update()
         baloon.draw()
+
     pygame.draw.rect(playgroundScreen.surface,'red',pygame.rect.Rect(target.x,target.y,20,20));
     # Draw the neural network
     nnVisualizer.updateAndDraw(neuralNetworkScreen.surface)
@@ -141,31 +115,36 @@ while running:
     playgroundScreen.textRenderer.addText('playgroundScreen',(10,10));
     playgroundScreen.textRenderer.render()
 
-    infoScreen.textRenderer.addText('__X: {:.2f}'.format(baloonPopulation[0].position.x),(10,10))
-    infoScreen.textRenderer.addText('__Y: {:.2f}'.format(baloonPopulation[0].position.y),(200,10))
+    infoScreen.textRenderer.addText('__X: {:.2f}'.format(population[0].position.x),(10,10))
+    infoScreen.textRenderer.addText('__Y: {:.2f}'.format(population[0].position.y),(200,10))
 
-    infoScreen.textRenderer.addText('_dX: {:.2f}'.format(baloonPopulation[0].velocity.x),(10,30))
-    infoScreen.textRenderer.addText('_dY: {:.2f}'.format(baloonPopulation[0].velocity.y),(200,30))
+    infoScreen.textRenderer.addText('_dX: {:.2f}'.format(population[0].velocity.x),(10,30))
+    infoScreen.textRenderer.addText('_dY: {:.2f}'.format(population[0].velocity.y),(200,30))
 
-    infoScreen.textRenderer.addText('ddX: {:.2f}'.format(baloonPopulation[0].acceleration.x),(10,50))
-    infoScreen.textRenderer.addText('ddY: {:.2f}'.format(baloonPopulation[0].acceleration.y),(200,50))
+    infoScreen.textRenderer.addText('ddX: {:.2f}'.format(population[0].acceleration.x),(10,50))
+    infoScreen.textRenderer.addText('ddY: {:.2f}'.format(population[0].acceleration.y),(200,50))
 
-    infoScreen.textRenderer.addText('Best score: {:.2f}'.format(baloonPopulation[0].score),(10,100))
-    infoScreen.textRenderer.addText('in[0][0]: {:.2f}'.format((target.x - baloonPopulation[0].position.x)/(WIDTH/2)),(10,130))
-    infoScreen.textRenderer.addText('in[1][0] {:.2f}'.format((target.y - baloonPopulation[0].position.y)/HEIGHT),(10,160))
+    infoScreen.textRenderer.addText('Best score: {:.2f}'.format(population[0].score),(10,100))
+    infoScreen.textRenderer.addText('in[0][0]: {:.2f}'.format((target.x - population[0].position.x)/(WIDTH/2)),(10,130))
+    infoScreen.textRenderer.addText('in[1][0] {:.2f}'.format((target.y - population[0].position.y)/HEIGHT),(10,160))
     infoScreen.textRenderer.addText('elapsed time: {:.2f} mins'.format(nowTime/60000),(10,190))
     infoScreen.textRenderer.addText('GENERATION: {}'.format(generationNumber),(10,250))
+    infoScreen.textRenderer.addText('TOURNAMENT: {}'.format(tournamentNumber),(10,280))
+    infoScreen.textRenderer.addText('BalPop: {}'.format(len(population)),(10,310))
+    infoScreen.textRenderer.addText('ElitePop: {}'.format(len(elitePopulation)),(10,340))
+
+
 
     infoScreen.textRenderer.render()
 
-    # print(baloonPopulation[0].neuralNetwork.outputValues)
+    # print(population[0].neuralNetwork.outputValues)
     # Blit (draw) mini-screens on the main screen
-    #rprint(baloonPopulation[0].neuralNetwork.lastInput)
+    #rprint(population[0].neuralNetwork.lastInput)
     screen.blit(playgroundScreen.surface, (0, 0))
     screen.blit(infoScreen.surface, (WIDTH//2, 0))
     screen.blit(neuralNetworkScreen.surface, (WIDTH//2, HEIGHT//2))
 
-    #rprint(baloonPopulation[0].neuralNetwork.outputValues)
+    #rprint(population[0].neuralNetwork.outputValues)
 
     pygame.display.flip()
     clock.tick(120) 

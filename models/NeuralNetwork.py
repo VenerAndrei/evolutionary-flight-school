@@ -26,10 +26,10 @@ class NeuralNetwork:
 
             output = np.matmul(layer.weights,output);
      
-            # vecReLU = np.vectorize(ReLU)
-            # output = vecReLU(output)
-            vecSigmoid = np.vectorize(sigmoid)
-            output = vecSigmoid(output)
+            vecReLU = np.vectorize(ReLU)
+            output = vecReLU(output)
+            # vecSigmoid = np.vectorize(sigmoid)
+            # output = vecSigmoid(output)
             self.outputValues.append(output);
 
         return output;
