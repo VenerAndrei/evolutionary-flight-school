@@ -17,7 +17,7 @@ def getNewBebeEliteBrains(population:List[Body]):
 
 def createChildrenBrain(parent1: Body, parent2: Body):
     bebeBrain = crossover(parent1,parent2)
-    bebeBrain = mutate(bebeBrain,0.1)
+    bebeBrain = mutate(bebeBrain,0.02)
     return bebeBrain;
 
 def crossover(parent1: Body, parent2: Body):

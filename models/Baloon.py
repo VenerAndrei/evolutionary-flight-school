@@ -49,9 +49,9 @@ class Body(Object):
         if(self.alive):
             pygame.draw.rect(self.screen, self.color, Rect(self.position.x,self.position.y, 20,20));
 
-    def updateScore(self, target:Vector2D, time):
+    def updateScore(self, target:Vector2D,time ):
         if(self.alive):
-            self.score += 1/(((target.x - self.position.x)**2 + (target.y - self.position.y)**2)/ HEIGHT) + time;
+            self.score += 1/((((target.x - self.position.x)/(WIDTH/2))**2 + ((target.y - self.position.y)/HEIGHT)**2)) + time*1.1;
 
     def think(self, target):
         

@@ -3,7 +3,7 @@ from typing import List, Dict
 from rich import print as rprint
 import numpy as np
 from models.Baloon import Body
-from models.GeneticAlgorithm import nextGeneration
+from models.GeneticAlgorithm import getNewBebeEliteBrains, nextGeneration
 from models.NeuralNetwork import NeuralNetwork
 from physics.Vector2D import Vector2D
 from visuals.NeuralNetworkVisualizer import NeuralNetVisualizer
@@ -62,14 +62,33 @@ for _ in range(50):
     b.neuralNetwork.feedforward(np.array([[0],[0]]));
     population.append(b);
 
+def areAlive(baloons):
+    for b in baloons:
+        if(b.alive):
+            return True
+    return False
+
 while running:
 
     nowTime = pygame.time.get_ticks()
     difTime = nowTime - lastTime
-    if(difTime >= 7000):
-        population = []
-        for _ in range(50):
 
+    if difTime >= 7000 or not areAlive(population):
+        
+        top = []
+        for b in population:
+            if(b.alive):
+                top.append(b);
+            if(len(top) == 6): break
+
+        brains = getNewBebeEliteBrains(top);
+        
+        population = []
+        for b in brains:
+            b.feedforward((np.array([[0],[0]])));
+            population.append(Body(playgroundScreen.surface, b, Vector2D(WIDTH//4 - 50,HEIGHT-20)))
+
+        for _ in range(20):
             nn = NeuralNetwork(2,4);
             b = Body(playgroundScreen.surface, nn, Vector2D(WIDTH//4 - 50,HEIGHT-20));
             b.neuralNetwork.feedforward(np.array([[0],[0]]));
@@ -77,6 +96,7 @@ while running:
             
         lastTime = nowTime;
         nnVisualizer = NeuralNetVisualizer(population[0].neuralNetwork)
+        generationNumber += 1;
 
     for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -95,18 +115,18 @@ while running:
 
     # Clear the main screen with a white color
     clearScreens()
-    population.sort(key=lambda x: x.score);
+    population.sort(key=lambda x: x.score,reverse=True);
     for baloon in population:
         baloon.color = 'blue'
     population[0].color = 'black'
     nnVisualizer = NeuralNetVisualizer(population[0].neuralNetwork)
 
     for baloon in population:
-
+        baloon.updateScore(target,difTime);
         baloon.think(target)
         baloon.update()
         baloon.draw()
-
+    population[0].draw()
     pygame.draw.rect(playgroundScreen.surface,'red',pygame.rect.Rect(target.x,target.y,20,20));
     # Draw the neural network
     nnVisualizer.updateAndDraw(neuralNetworkScreen.surface)
@@ -132,7 +152,7 @@ while running:
     infoScreen.textRenderer.addText('TOURNAMENT: {}'.format(tournamentNumber),(10,280))
     infoScreen.textRenderer.addText('BalPop: {}'.format(len(population)),(10,310))
     infoScreen.textRenderer.addText('ElitePop: {}'.format(len(elitePopulation)),(10,340))
-
+    rprint(population[0].neuralNetwork.outputValues)
 
 
     infoScreen.textRenderer.render()
