@@ -1,6 +1,7 @@
 from models.Layer import Layer
 import numpy as np
 from typing import List
+
 def ReLU(input):
     if input < 0: return 0
     return input
