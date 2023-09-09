@@ -19,7 +19,6 @@ def clearScreens():
     neuralNetworkScreen.surface.fill((0, 0, 255)) 
 
 
-
 # Initialize Pygame
 pygame.init()
 clock = pygame.time.Clock()
@@ -38,7 +37,7 @@ neuralNetworkScreen = Screen((WIDTH//2, HEIGHT//2))
 #Baloon Object
 
 
-target = Vector2D(WIDTH//4,HEIGHT//2);
+target = Vector2D(200,150);
 
 errSum = 0
 # Main game loop
@@ -58,7 +57,7 @@ population = []
 
 for _ in range(50):
     nn = NeuralNetwork(2,4);
-    b = Body(playgroundScreen.surface, nn, Vector2D(WIDTH//4 - 50,HEIGHT-20));
+    b = Body(playgroundScreen.surface, nn, Vector2D(WIDTH/2 - 50,HEIGHT-20));
     b.neuralNetwork.feedforward(np.array([[0],[0]]));
     population.append(b);
 
@@ -70,11 +69,29 @@ def areAlive(baloons):
 
 while running:
 
+    for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                btn = pygame.mouse
+                target.x = pos[0]
+                target.y = pos[1]
+                print ("x = {}, y = {}".format(pos[0], pos[1]))
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                     running = False
+                if event.key == pygame.K_s:
+                    population.sort(key=lambda x: x.score,reverse=True);
+                    population[0].neuralNetwork.save('SAVE.txt')
+                
+
     nowTime = pygame.time.get_ticks()
     difTime = nowTime - lastTime
 
     if difTime >= 7000 or not areAlive(population):
-        
+        population.sort(key=lambda x: x.score,reverse=True);
+
         top = []
         for b in population:
             if(b.alive):
@@ -86,33 +103,19 @@ while running:
         population = []
         for b in brains:
             b.feedforward((np.array([[0],[0]])));
-            population.append(Body(playgroundScreen.surface, b, Vector2D(WIDTH//4 - 50,HEIGHT-20)))
+            population.append(Body(playgroundScreen.surface, b, Vector2D(WIDTH/2 - 50,HEIGHT-20)))
 
         for _ in range(20):
             nn = NeuralNetwork(2,4);
-            b = Body(playgroundScreen.surface, nn, Vector2D(WIDTH//4 - 50,HEIGHT-20));
+            b = Body(playgroundScreen.surface, nn, Vector2D(WIDTH/2 - 50,HEIGHT-20));
             b.neuralNetwork.feedforward(np.array([[0],[0]]));
             population.append(b);
             
         lastTime = nowTime;
         nnVisualizer = NeuralNetVisualizer(population[0].neuralNetwork)
         generationNumber += 1;
-
-    for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                     running = False
-                if event.key == pygame.K_d:
-                     baloon.applyForce(Vector2D(5,0))
-                if event.key == pygame.K_a:
-                     baloon.applyForce(Vector2D(-5,0))
-                if event.key == pygame.K_w:
-                     baloon.applyForce(Vector2D(0,-5))
-                if event.key == pygame.K_s:
-                     baloon.applyForce(Vector2D(0,5))
-
+    
+    
     # Clear the main screen with a white color
     clearScreens()
     population.sort(key=lambda x: x.score,reverse=True);
@@ -152,7 +155,7 @@ while running:
     infoScreen.textRenderer.addText('TOURNAMENT: {}'.format(tournamentNumber),(10,280))
     infoScreen.textRenderer.addText('BalPop: {}'.format(len(population)),(10,310))
     infoScreen.textRenderer.addText('ElitePop: {}'.format(len(elitePopulation)),(10,340))
-    rprint(population[0].neuralNetwork.outputValues)
+    #rprint(population[0].neuralNetwork.outputValues)
 
 
     infoScreen.textRenderer.render()
